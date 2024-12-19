@@ -6,6 +6,8 @@ import LoginScreen from "./src/screens/LoginScreen";
 import RegisterScreen from "./src/screens/RegisterScreen";
 import AirQualityDataScreen from "./src/screens/AirQualityDataScreen";
 import GraphicalDataScreen from "./src/screens/GraphicalDataScreen";
+import DevicesScreen from "./src/screens/DevicesScreen";
+import PurifierScreen from "./src/screens/PurifierScreen";
 
 const Stack = createStackNavigator();
 
@@ -36,6 +38,16 @@ export default function App() {
         <Stack.Screen
           name="graphicalData"
           component={GraphicalDataScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="devices"
+          component={DevicesScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="purifier"
+          component={PurifierScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

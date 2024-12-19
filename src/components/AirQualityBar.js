@@ -1,8 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { View, Text, StyleSheet } from "react-native";
 import * as Progress from "react-native-progress";
 
 const AirQualityBar = ({ airQualityStatus }) => {
+  useEffect(() => {
+    console.log("Air Quality Status Updated:", airQualityStatus);
+  }, [airQualityStatus]);
+
   let barColor = "#4caf50";
   let progress = 1; // Good
   let label = "Good";

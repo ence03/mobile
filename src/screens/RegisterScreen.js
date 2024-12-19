@@ -9,17 +9,46 @@ import {
 import React, { useState } from "react";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
+import useAuthStore from "../store/authStore";
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const { setUser } = useAuthStore();
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
   };
 
-  const handleRegister = () => {
-    navigation.navigate("login");
+  const handleRegister = async () => {
+    setLoading(true);
+    setError(""); // Reset error message before attempting to register
+    try {
+      const response = await axios.post(
+        "http://192.168.0.118:7000/api/auth/register",
+        {
+          username,
+          email,
+          password,
+        }
+      );
+
+      if (response.data.success) {
+        // On successful registration, log the user in automatically or navigate
+        setUser(response.data.user, response.data.token); // Set user and token in Zustand store
+        navigation.navigate("login"); // Redirect to home page or dashboard
+      }
+    } catch (error) {
+      setError(error.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoToLogin = () => {
@@ -39,11 +68,15 @@ const RegisterScreen = () => {
           style={styles.input}
           placeholder="Username"
           autoCapitalize="none"
+          value={username}
+          onChangeText={setUsername}
         />
         <TextInput
           style={styles.input}
           placeholder="Email"
           autoCapitalize="none"
+          value={email}
+          onChangeText={setEmail}
         />
         <View>
           <TextInput
@@ -51,6 +84,8 @@ const RegisterScreen = () => {
             placeholder="Password"
             autoCapitalize="none"
             secureTextEntry={!isPasswordVisible}
+            value={password}
+            onChangeText={setPassword}
           />
           <TouchableOpacity
             onPress={togglePasswordVisibility}
@@ -64,8 +99,16 @@ const RegisterScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={handleRegister} style={styles.btn}>
-          <Text style={styles.btnText}>Register</Text>
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+        <TouchableOpacity
+          onPress={handleRegister}
+          style={styles.btn}
+          disabled={loading}
+        >
+          <Text style={styles.btnText}>
+            {loading ? "Registering..." : "Register"}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleGoToLogin}>
           <Text style={styles.btn2Text}>
@@ -130,6 +173,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 5,
     padding: 10,
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
   },
 });
 

@@ -14,6 +14,14 @@ const HomeScreen = () => {
     navigation.navigate("graphicalData");
   };
 
+  const handleToDevices = () => {
+    navigation.navigate("devices");
+  };
+
+  const handleToPurifier = () => {
+    navigation.navigate("purifier");
+  };
+
   return (
     <View style={styles.container}>
       <Header />
@@ -34,10 +42,10 @@ const HomeScreen = () => {
           <TouchableOpacity onPress={handleToGraphicalData} style={styles.btns}>
             <Text style={styles.btnsText}>Graphical Data</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.btns}>
+          <TouchableOpacity onPress={handleToPurifier} style={styles.btns}>
             <Text style={styles.btnsText}> Purifier</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.btns}>
+          <TouchableOpacity onPress={handleToDevices} style={styles.btns}>
             <Text style={styles.btnsText}>Devices</Text>
           </TouchableOpacity>
         </View>

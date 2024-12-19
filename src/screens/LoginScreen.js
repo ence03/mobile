@@ -9,17 +9,44 @@ import {
 import React, { useState } from "react";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import { useNavigation } from "@react-navigation/native";
+import axios from "axios";
+import useAuthStore from "../store/authStore";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const { setUser } = useAuthStore();
+  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   const togglePasswordVisibility = () => {
     setIsPasswordVisible(!isPasswordVisible);
   };
 
-  const handleLogin = () => {
-    navigation.navigate("home");
+  const handleLogin = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await axios.post(
+        "http://192.168.0.118:7000/api/auth/login",
+        {
+          username,
+          password,
+        }
+      );
+
+      if (response.data.success) {
+        setUser(response.data.user, response.data.token);
+        navigation.navigate("home");
+      }
+    } catch (error) {
+      setError(error.response?.data?.message || "Login failed");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleGoToRegister = () => {
@@ -39,6 +66,8 @@ const LoginScreen = () => {
           style={styles.input}
           placeholder="Username"
           autoCapitalize="none"
+          value={username}
+          onChangeText={setUsername}
         />
         <View>
           <TextInput
@@ -46,6 +75,8 @@ const LoginScreen = () => {
             placeholder="Password"
             autoCapitalize="none"
             secureTextEntry={!isPasswordVisible}
+            value={password}
+            onChangeText={setPassword}
           />
           <TouchableOpacity
             onPress={togglePasswordVisibility}
@@ -59,8 +90,17 @@ const LoginScreen = () => {
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={handleLogin} style={styles.btn}>
-          <Text style={styles.btnText}>Login</Text>
+        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+        <TouchableOpacity
+          onPress={handleLogin}
+          style={styles.btn}
+          disabled={loading}
+        >
+          <Text style={styles.btnText}>
+            {" "}
+            {loading ? "Logging in..." : "Login"}
+          </Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={handleGoToRegister}>
           <Text style={styles.btn2Text}>
@@ -125,6 +165,10 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 5,
     padding: 10,
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
   },
 });
 
