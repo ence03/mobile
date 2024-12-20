@@ -5,12 +5,13 @@ import {
   TouchableOpacity,
   FlatList,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import Header from "../components/Header";
 import useDeviceStore from "../store/deviceStore";
 
 const PurifierScreen = () => {
   const { devices, updateDevice, fetchDevices } = useDeviceStore();
+  const [purifyingMessage, setPurifyingMessage] = useState({});
 
   // Fetch devices on component mount
   React.useEffect(() => {
@@ -20,10 +21,24 @@ const PurifierScreen = () => {
   const toggleRelayState = (device) => {
     const updatedRelayState = !device.relayState;
     updateDevice(device._id, { relayState: updatedRelayState });
+
+    if (!updatedRelayState) {
+      // Reset duration when turning off
+      updateDevice(device._id, { operationDuration: null });
+      setPurifyingMessage((prev) => ({
+        ...prev,
+        [device._id]: null,
+      }));
+    }
   };
 
   const updateDuration = (device, duration) => {
-    updateDevice(device._id, { operationDuration: duration });
+    const durationString = duration === 60 ? "1hr" : `${duration}min`;
+    updateDevice(device._id, { operationDuration: durationString });
+    setPurifyingMessage((prev) => ({
+      ...prev,
+      [device._id]: `Purifying for ${durationString}`,
+    }));
   };
 
   return (
@@ -44,7 +59,7 @@ const PurifierScreen = () => {
               onPress={() => toggleRelayState(item)}
             >
               <Text style={styles.relayButtonText}>
-                {item.relayState ? "On" : "Off"}
+                {item.relayState ? "ON" : "OFF"}
               </Text>
             </TouchableOpacity>
             <View style={styles.durationContainer}>
@@ -53,18 +68,24 @@ const PurifierScreen = () => {
                   key={index}
                   style={[
                     styles.durationButton,
-                    item.operationDuration === parseInt(duration)
+                    item.operationDuration === duration
                       ? styles.durationButtonSelected
                       : null,
                   ]}
-                  onPress={() => updateDuration(item, parseInt(duration))}
+                  onPress={() =>
+                    item.relayState && updateDuration(item, parseInt(duration))
+                  }
+                  disabled={!item.relayState} // Disable if relay is off
                 >
                   <Text
                     style={[
                       styles.durationButtonText,
-                      item.operationDuration === parseInt(duration)
+                      item.operationDuration === duration
                         ? styles.durationButtonTextSelected
                         : null,
+                      !item.relayState
+                        ? styles.durationButtonTextDisabled
+                        : null, // Gray text if disabled
                     ]}
                   >
                     {duration}
@@ -72,6 +93,11 @@ const PurifierScreen = () => {
                 </TouchableOpacity>
               ))}
             </View>
+            {purifyingMessage[item._id] && (
+              <Text style={styles.purifyingMessage}>
+                {purifyingMessage[item._id]}
+              </Text>
+            )}
           </View>
         )}
         ListEmptyComponent={<Text>No devices available.</Text>}
@@ -116,20 +142,32 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   durationButton: {
-    padding: 8,
+    paddingHorizontal: 5,
+    paddingVertical: 8,
     borderRadius: 5,
     backgroundColor: "#e0e0e0",
     marginHorizontal: 4,
+    width: 100,
   },
   durationButtonSelected: {
     backgroundColor: "#007BFF",
   },
   durationButtonText: {
     fontSize: 14,
+    textAlign: "center",
   },
   durationButtonTextSelected: {
     color: "#fff",
     fontWeight: "bold",
+  },
+  durationButtonTextDisabled: {
+    color: "#aaa",
+  },
+  purifyingMessage: {
+    marginTop: 8,
+    color: "#555",
+    fontStyle: "italic",
+    textAlign: "center",
   },
 });
 

@@ -14,7 +14,7 @@ const useAverageStore = create((set) => ({
     set({ loading: true, error: null });
     try {
       const response = await axios.get(
-        "http:///192.168.0.118:7000/api/average/"
+        "http://192.168.0.118:7000/api/average/"
       ); // Replace with your actual API endpoint
       set({ averages: response.data.data, loading: false });
     } catch (error) {
@@ -26,7 +26,7 @@ const useAverageStore = create((set) => ({
   createAverage: async (newAverageData) => {
     try {
       const response = await axios.post(
-        "http:///192.168.0.118:7000/api/average/",
+        "http://192.168.0.118:7000/api/average/",
         newAverageData
       ); // Replace with your actual API endpoint
       if (response.data.success) {
