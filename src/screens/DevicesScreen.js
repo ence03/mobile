@@ -6,8 +6,6 @@ import {
   TextInput,
   FlatList,
   Modal,
-  Button,
-  Image,
 } from "react-native";
 import React, { useState } from "react";
 import Header from "../components/Header";
@@ -15,10 +13,10 @@ import useDeviceStore from "../store/deviceStore";
 
 const DevicesScreen = () => {
   const [deviceName, setDeviceName] = useState("");
-  const [selectedDevice, setSelectedDevice] = useState(null);
-  const [relayState, setRelayState] = useState(false);
-  const [operationDuration, setOperationDuration] = useState(null);
-  const [isEditModalVisible, setEditModalVisible] = useState(false);
+  const [deviceLocation, setDeviceLocation] = useState(""); // State for location
+  const [isAddModalVisible, setAddModalVisible] = useState(false);
+  const [isEditModalVisible, setEditModalVisible] = useState(false); // State for edit modal
+  const [deviceToEdit, setDeviceToEdit] = useState(null); // State for the device to edit
 
   const { devices, addDevice, deleteDevice, updateDevice, fetchDevices } =
     useDeviceStore();
@@ -28,13 +26,16 @@ const DevicesScreen = () => {
   }, [fetchDevices]);
 
   const handleAddDevice = () => {
-    if (deviceName.trim()) {
+    if (deviceName.trim() && deviceLocation.trim()) {
       addDevice({
         name: deviceName,
         relayState: false,
         operationDuration: null,
+        location: deviceLocation,
       });
       setDeviceName("");
+      setDeviceLocation(""); // Reset location input
+      setAddModalVisible(false); // Close modal after adding the device
     }
   };
 
@@ -43,17 +44,23 @@ const DevicesScreen = () => {
   };
 
   const handleEditDevice = (device) => {
-    setSelectedDevice(device);
-    setRelayState(device.relayState ?? false);
-    setOperationDuration(device.operationDuration ?? null);
+    setDeviceToEdit(device);
+    setDeviceName(device.name);
+    setDeviceLocation(device.location);
     setEditModalVisible(true);
   };
 
   const handleUpdateDevice = () => {
-    if (selectedDevice) {
-      updateDevice(selectedDevice._id, { relayState, operationDuration });
-      setEditModalVisible(false);
-      setSelectedDevice(null);
+    if (deviceName.trim() && deviceLocation.trim() && deviceToEdit) {
+      updateDevice({
+        ...deviceToEdit,
+        name: deviceName,
+        location: deviceLocation,
+      });
+      setDeviceName("");
+      setDeviceLocation(""); // Reset location input
+      setEditModalVisible(false); // Close modal after editing
+      setDeviceToEdit(null); // Reset the device being edited
     }
   };
 
@@ -71,6 +78,8 @@ const DevicesScreen = () => {
               <Text style={styles.deviceStatus}>
                 {item.relayState ? "ON" : "OFF"}
               </Text>
+              <Text style={styles.deviceLocation}>{item.location}</Text>{" "}
+              {/* Show location */}
             </View>
             <View style={styles.actionsContainer}>
               <TouchableOpacity
@@ -92,18 +101,60 @@ const DevicesScreen = () => {
           <Text style={styles.emptyList}>No devices added yet.</Text>
         }
       />
-      <View style={styles.addDeviceContainer}>
-        <TextInput
-          style={styles.input}
-          placeholder="Enter device name"
-          value={deviceName}
-          onChangeText={setDeviceName}
-        />
-        <TouchableOpacity style={styles.addButton} onPress={handleAddDevice}>
-          <Text style={styles.addButtonText}>+ Add Device</Text>
-        </TouchableOpacity>
-      </View>
+      {/* Add Device Button */}
+      <TouchableOpacity
+        style={styles.addButton}
+        onPress={() => setAddModalVisible(true)}
+      >
+        <Text style={styles.addButtonText}>+ Add Device</Text>
+      </TouchableOpacity>
 
+      {/* Add Device Modal */}
+      <Modal
+        visible={isAddModalVisible}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setAddModalVisible(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add New Device</Text>
+
+            {/* Device Name Input */}
+            <TextInput
+              style={styles.input}
+              placeholder="Enter device name"
+              value={deviceName}
+              onChangeText={setDeviceName}
+            />
+
+            {/* Location Input */}
+            <TextInput
+              style={styles.input}
+              placeholder="Enter device location"
+              value={deviceLocation}
+              onChangeText={setDeviceLocation}
+            />
+
+            <View style={styles.modalActions}>
+              <TouchableOpacity
+                style={styles.addDeviceButton}
+                onPress={handleAddDevice}
+              >
+                <Text style={styles.buttonText}>Add Device</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
+                onPress={() => setAddModalVisible(false)}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Device Modal */}
       <Modal
         visible={isEditModalVisible}
         animationType="slide"
@@ -113,25 +164,29 @@ const DevicesScreen = () => {
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>Edit Device</Text>
+
+            {/* Device Name Input */}
             <TextInput
               style={styles.input}
-              placeholder="Relay State (true/false)"
-              value={relayState?.toString() ?? "false"}
-              onChangeText={(value) => setRelayState(value === "true")}
+              placeholder="Enter device name"
+              value={deviceName}
+              onChangeText={setDeviceName}
             />
+
+            {/* Location Input */}
             <TextInput
               style={styles.input}
-              placeholder="Operation Duration (in minutes)"
-              keyboardType="numeric"
-              value={operationDuration?.toString() ?? "0"}
-              onChangeText={(value) => setOperationDuration(Number(value))}
+              placeholder="Enter device location"
+              value={deviceLocation}
+              onChangeText={setDeviceLocation}
             />
+
             <View style={styles.modalActions}>
               <TouchableOpacity
-                style={styles.updateButton}
+                style={styles.addDeviceButton}
                 onPress={handleUpdateDevice}
               >
-                <Text style={styles.buttonText}>Update</Text>
+                <Text style={styles.buttonText}>Update Device</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.cancelButton}
@@ -185,6 +240,11 @@ const styles = StyleSheet.create({
     color: "#777",
     marginTop: 4,
   },
+  deviceLocation: {
+    fontSize: 12,
+    color: "#555",
+    marginTop: 4, // Added margin for spacing
+  },
   actionsContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -213,26 +273,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 16,
   },
-  addDeviceContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 16,
-    marginBottom: 20,
-  },
-  input: {
-    flex: 1,
-    padding: 12,
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: "#ddd",
-    marginRight: 12,
-  },
   addButton: {
     backgroundColor: "#007BFF",
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
+    alignSelf: "center",
+    marginTop: 16,
   },
   addButtonText: {
     color: "#fff",
@@ -264,7 +311,7 @@ const styles = StyleSheet.create({
     width: "100%",
     marginTop: 20,
   },
-  updateButton: {
+  addDeviceButton: {
     backgroundColor: "#007BFF",
     paddingVertical: 12,
     paddingHorizontal: 24,
@@ -275,6 +322,15 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 24,
     borderRadius: 8,
+  },
+  input: {
+    width: "100%",
+    padding: 12,
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    marginBottom: 12,
   },
 });
 

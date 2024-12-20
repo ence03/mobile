@@ -65,7 +65,7 @@ const AirQualityDataScreen = () => {
           <ChartMeter
             title="Temperature (°C)"
             value={latestData.temperature}
-            max={50}
+            max={105}
             color={getTemperatureColor(latestData.temperature)}
           />
           <ChartMeter

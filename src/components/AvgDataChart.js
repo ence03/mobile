@@ -56,16 +56,24 @@ const AvgDataChart = () => {
     <View style={styles.container}>
       {/* Toggle buttons to switch between "hourly" and "daily" */}
       <View style={styles.toggleContainer}>
-        <Button
-          title="Hourly"
+        <TouchableOpacity
           onPress={() => setType("hourly")}
-          color={type === "hourly" ? "#4caf50" : "#ccc"}
-        />
-        <Button
-          title="Daily"
+          style={[
+            styles.tglbtn,
+            { backgroundColor: type === "hourly" ? "#4caf50" : "#ccc" },
+          ]}
+        >
+          <Text style={styles.tglbtnText}>Hourly</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
           onPress={() => setType("daily")}
-          color={type === "daily" ? "#4caf50" : "#ccc"}
-        />
+          style={[
+            styles.tglbtn,
+            { backgroundColor: type === "daily" ? "#4caf50" : "#ccc" },
+          ]}
+        >
+          <Text style={styles.tglbtnText}>Daily</Text>
+        </TouchableOpacity>
       </View>
 
       {/* ScrollView for displaying data */}
@@ -153,6 +161,18 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     justifyContent: "space-evenly",
     width: "100%",
+  },
+  tglbtn: {
+    width: 100,
+    padding: 10,
+    borderRadius: 5,
+    elevation: 3,
+  },
+  tglbtnText: {
+    fontSize: 12,
+    fontWeight: "bold",
+    color: "white",
+    textAlign: "center",
   },
   scrollContainer: {
     flexGrow: 1,
