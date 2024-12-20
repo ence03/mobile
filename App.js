@@ -8,6 +8,7 @@ import AirQualityDataScreen from "./src/screens/AirQualityDataScreen";
 import GraphicalDataScreen from "./src/screens/GraphicalDataScreen";
 import DevicesScreen from "./src/screens/DevicesScreen";
 import PurifierScreen from "./src/screens/PurifierScreen";
+import AnalysisScreen from "./src/screens/AnalysisScreen";
 
 const Stack = createStackNavigator();
 
@@ -48,6 +49,11 @@ export default function App() {
         <Stack.Screen
           name="purifier"
           component={PurifierScreen}
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="analysis"
+          component={AnalysisScreen}
           options={{ headerShown: false }}
         />
       </Stack.Navigator>

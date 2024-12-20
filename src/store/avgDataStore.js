@@ -10,11 +10,11 @@ const useAverageStore = create((set) => ({
   error: null,
 
   // Action to fetch averages from the backend
-  fetchAverages: async () => {
+  fetchAverages: async (type = "hourly") => {
     set({ loading: true, error: null });
     try {
       const response = await axios.get(
-        "http://192.168.0.118:7000/api/average/"
+        "http://192.168.0.118:7000/api/average?type=${type}"
       ); // Replace with your actual API endpoint
       set({ averages: response.data.data, loading: false });
     } catch (error) {

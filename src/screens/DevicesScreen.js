@@ -7,6 +7,7 @@ import {
   FlatList,
   Modal,
   Button,
+  Image,
 } from "react-native";
 import React, { useState } from "react";
 import Header from "../components/Header";
@@ -22,7 +23,6 @@ const DevicesScreen = () => {
   const { devices, addDevice, deleteDevice, updateDevice, fetchDevices } =
     useDeviceStore();
 
-  // Fetch devices on component mount
   React.useEffect(() => {
     fetchDevices();
   }, [fetchDevices]);
@@ -66,24 +66,31 @@ const DevicesScreen = () => {
         keyExtractor={(item) => item._id}
         renderItem={({ item }) => (
           <View style={styles.deviceItem}>
-            <Text>{item.name}</Text>
+            <View style={styles.deviceInfo}>
+              <Text style={styles.deviceName}>{item.name}</Text>
+              <Text style={styles.deviceStatus}>
+                {item.relayState ? "ON" : "OFF"}
+              </Text>
+            </View>
             <View style={styles.actionsContainer}>
               <TouchableOpacity
                 style={styles.editButton}
                 onPress={() => handleEditDevice(item)}
               >
-                <Text style={styles.editButtonText}>Edit</Text>
+                <Text style={styles.buttonText}>Edit</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.deleteButton}
                 onPress={() => handleDeleteDevice(item._id)}
               >
-                <Text style={styles.deleteButtonText}>Delete</Text>
+                <Text style={styles.buttonText}>Delete</Text>
               </TouchableOpacity>
             </View>
           </View>
         )}
-        ListEmptyComponent={<Text>No devices added yet.</Text>}
+        ListEmptyComponent={
+          <Text style={styles.emptyList}>No devices added yet.</Text>
+        }
       />
       <View style={styles.addDeviceContainer}>
         <TextInput
@@ -93,7 +100,7 @@ const DevicesScreen = () => {
           onChangeText={setDeviceName}
         />
         <TouchableOpacity style={styles.addButton} onPress={handleAddDevice}>
-          <Text style={styles.addButtonText}>Add Device</Text>
+          <Text style={styles.addButtonText}>+ Add Device</Text>
         </TouchableOpacity>
       </View>
 
@@ -120,11 +127,18 @@ const DevicesScreen = () => {
               onChangeText={(value) => setOperationDuration(Number(value))}
             />
             <View style={styles.modalActions}>
-              <Button title="Update" onPress={handleUpdateDevice} />
-              <Button
-                title="Cancel"
+              <TouchableOpacity
+                style={styles.updateButton}
+                onPress={handleUpdateDevice}
+              >
+                <Text style={styles.buttonText}>Update</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.cancelButton}
                 onPress={() => setEditModalVisible(false)}
-              />
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -136,70 +150,94 @@ const DevicesScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: "#f5f5f5",
+    padding: 16,
   },
   title: {
     fontSize: 24,
     fontWeight: "bold",
+    color: "#333",
     marginVertical: 16,
-    marginHorizontal: 10,
   },
   deviceItem: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
     padding: 16,
-    backgroundColor: "#f9f9f9",
-    borderBottomWidth: 1,
-    borderColor: "#ddd",
+    marginVertical: 8,
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginHorizontal: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    elevation: 4,
+  },
+  deviceInfo: {
+    flex: 1,
+  },
+  deviceName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+  },
+  deviceStatus: {
+    fontSize: 14,
+    color: "#777",
+    marginTop: 4,
   },
   actionsContainer: {
     flexDirection: "row",
+    alignItems: "center",
+  },
+  editButton: {
+    backgroundColor: "#FFA500",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  deleteButton: {
+    backgroundColor: "#FF4C4C",
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 8,
+    marginLeft: 8,
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  emptyList: {
+    fontSize: 16,
+    color: "#888",
+    textAlign: "center",
+    marginTop: 16,
   },
   addDeviceContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginTop: 16,
+    marginBottom: 20,
   },
   input: {
     flex: 1,
+    padding: 12,
+    backgroundColor: "#fff",
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 8,
-    borderRadius: 4,
-    marginRight: 8,
-    marginLeft: 10,
-    marginBottom: 10,
+    borderColor: "#ddd",
+    marginRight: 12,
   },
   addButton: {
     backgroundColor: "#007BFF",
-    padding: 12,
-    borderRadius: 4,
-    marginRight: 10,
-    marginBottom: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
   },
   addButtonText: {
     color: "#fff",
     fontWeight: "bold",
-  },
-  deleteButton: {
-    backgroundColor: "#FF4C4C",
-    padding: 8,
-    borderRadius: 4,
-    marginLeft: 8,
-  },
-  deleteButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-  },
-  editButton: {
-    backgroundColor: "#FFA500",
-    padding: 8,
-    borderRadius: 4,
-  },
-  editButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
+    fontSize: 16,
   },
   modalContainer: {
     flex: 1,
@@ -211,19 +249,32 @@ const styles = StyleSheet.create({
     width: "80%",
     backgroundColor: "#fff",
     borderRadius: 8,
-    padding: 16,
+    padding: 20,
     alignItems: "center",
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
-    marginBottom: 16,
+    color: "#333",
+    marginBottom: 20,
   },
   modalActions: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
-    marginTop: 16,
+    marginTop: 20,
+  },
+  updateButton: {
+    backgroundColor: "#007BFF",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  cancelButton: {
+    backgroundColor: "#FF4C4C",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
   },
 });
 
