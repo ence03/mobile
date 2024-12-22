@@ -4,6 +4,7 @@ import ChartMeter from "../components/ChartMeter";
 import AirQualityBar from "../components/AirQualityBar";
 import Header from "../components/Header";
 import { useSensorDataStore } from "../store/sensorDataStore";
+import useAverageStore from "../store/avgDataStore";
 
 const AirQualityDataScreen = () => {
   const {
@@ -14,11 +15,29 @@ const AirQualityDataScreen = () => {
     listenForNewData,
   } = useSensorDataStore();
 
+  const { calculateAndSendHourlyAverage, calculateAndSendDailyAverage } =
+    useAverageStore();
+
+  const [hasProcessedData, setHasProcessedData] = React.useState(false);
+
   useEffect(() => {
     listenForNewData();
 
     fetchLatestSensorData();
   }, [fetchLatestSensorData, listenForNewData]);
+
+  useEffect(() => {
+    if (latestData && !hasProcessedData) {
+      calculateAndSendHourlyAverage(latestData);
+      calculateAndSendDailyAverage();
+      setHasProcessedData(true); // Mark that the data has been processed
+    }
+  }, [
+    latestData,
+    calculateAndSendHourlyAverage,
+    calculateAndSendDailyAverage,
+    hasProcessedData,
+  ]);
 
   console.log("Latest Data in Component:", latestData);
 
